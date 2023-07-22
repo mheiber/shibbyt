@@ -27,9 +27,9 @@ Constraints and lack of utility and quality can be freeing.
 
 `./script.sh && open ./one.webp`, but use the crontab stuff in the "config" section above to auto-update
 
-## lint and test
+## lint
 
-just kidding!
+pixlet lint main.star --fix
 
 ## Resources:
 
