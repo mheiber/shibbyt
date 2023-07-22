@@ -44,7 +44,7 @@ def get_weather_str(config):
 def render_weather_str(weather_str):
     return render.WrappedText(weather_str, color = LIGHT_GRAY)
 
-def tide_html_to_tide_str(tide_html_str):
+def parse_tide_times(tide_html_str, size):
     def parse(selector, range_):
         results = []
         matches = html(tide_html_str).find(selector)
@@ -53,16 +53,19 @@ def tide_html_to_tide_str(tide_html_str):
             results.append(match.text())
         return results
 
-    times = parse(".wr-c-tide-time", range(0, 4))
+    return parse(".wr-c-tide-time", range(0, size))
 
-    return times[1] + " " + times[3]
-
-def get_tide_str(config):
+def get_tide_times(config, size):
     station = config.get("TIDE_STATION")
     tide_url = TIDE_URL_TEMPLATE % station
     print(tide_url)
     html = http_get(tide_url).body()
-    return tide_html_to_tide_str(html) + " " + str(time.now().minute)
+    return parse_tide_times(html, size)
+
+def get_tide_str(config):
+    times = get_tide_times(config, 4)
+    tide_str = times[1] + " " + times[3]
+    return tide_str + " " + str(time.now().minute)
 
 def render_tide_str(tide_str):
     return render.Text(tide_str, color = LIGHT_BROWN)
@@ -73,8 +76,6 @@ def do_render(rows):
 def main(config):
     tide_str = get_tide_str(config)
     tide_row = render_tide_str(tide_str)
-
     weather_str = get_weather_str(config)
     weather_row = render_weather_str(weather_str)
-
     return do_render([tide_row, weather_row])
