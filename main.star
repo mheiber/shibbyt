@@ -17,35 +17,11 @@ LIGHT_BROWN = "#C4A484"
 LIGHT_GRAY = "#d3d3d3"
 
 
-def calc_bing_url(config, departure_time):
-    src = config.get('SRC').replace(' ', '%20')
-    dest = config.get('DEST').replace(' ', '%20')
-    now = '%d:%d' % (time.now().hour, time.now().minute)
-    bing_key = config.get('BING_KEY')
-    return BING_URL_TEMPLATE % (src, dest, now, bing_key)
-
-
 def http_get(url):
     res = http.get(url, ttl_seconds=60)
     if res.status_code != 200:
         fail("GET %s failed with status %d: %s", url, res.status_code, res.body())
     return res
-
-
-def bing_dict_to_duration_minutes(response_dict):
-    return response_dict['resourceSets'][0]['resources'][0]['travelDuration'] / 60
-
-
-def get_bing_duration_str(config, departure_time):
-    bing_url = calc_bing_url(config, departure_time)
-    print(bing_url)
-    response_dict = http_get(bing_url).json()
-    duration_minutes = bing_dict_to_duration_minutes(response_dict)
-    return str(int(duration_minutes))
-
-
-def render_duration_row(duration_str):
-    return render.Text(duration_str, color=RED)
 
 
 def calc_weather_url(config):
@@ -87,9 +63,8 @@ def tide_html_to_tide_str(tide_html_str):
     root = html(tide_html_str)
     times = parse('.wr-c-tide-time', range(0, 4))
 
-    # heights = parse('.wr-c-tide-extremes__height', range(1, 5))
-    # low_tides
     return times[1] + ' ' + times[3]
+
 
 def get_tide_str(config):
     station = config.get('TIDE_STATION')
@@ -108,16 +83,11 @@ def do_render(rows):
     
 
 def main(config):
-    # duration_str = get_bing_duration_str(config, time.now())
-    # duration_row = render_duration_row(duration_str)
-
     tide_str = get_tide_str(config)
     tide_row = render_tide_str(tide_str)
 
     weather_str = get_weather_str(config)
     weather_row = render_weather_str(weather_str)
 
-    # empty = render.Row(children = [render.Text("")])
     return do_render([tide_row, weather_row])
-
 
